@@ -197,6 +197,12 @@ However, because these transformations occur at build time, they cannot be
 considered accurate. Accurately resolving cascading variables relies on
 knowledge of the living DOM tree.
 
+## What about [postcss/postcss-color-function]?
+
+`postcss/postcss-color-function` has been receiving little support and [falling behind the spec draft]; this project was coincived as an up-to-date replacement.
+
+If you are migrating from `postcss/postcss-color-function`, swapping the plugins and renaming every `color()` function call to `color-mod()` should be enough.
+
 [cli-img]: https://img.shields.io/travis/jonathantneal/postcss-color-mod-function.svg
 [cli-url]: https://travis-ci.org/jonathantneal/postcss-color-mod-function
 [css-img]: https://jonathantneal.github.io/cssdb/badge/color-mod-function.svg
@@ -213,3 +219,5 @@ knowledge of the living DOM tree.
 [Grunt PostCSS]: https://github.com/nDmitry/grunt-postcss
 [PostCSS]: https://github.com/postcss/postcss
 [PostCSS color-mod() Function]: https://github.com/jonathantneal/postcss-color-mod-function
+[postcss/postcss-color-function]: https://github.com/postcss/postcss-color-function/
+[falling behind the spec draft]: https://github.com/ianstormtaylor/css-color-function/pull/35
