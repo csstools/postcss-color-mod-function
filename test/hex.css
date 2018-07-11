@@ -20,4 +20,5 @@ test {
 	color: color-mod(#000000 blend(#ffffff 50%));
 	color: color-mod(#000000 blenda(#ffffff 50%));
 	color: color-mod(#000000 contrast(50%));
+	color: color-mod(#f7f8f8 blackness(7%));
 }
