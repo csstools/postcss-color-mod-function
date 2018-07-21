@@ -7,11 +7,11 @@
   "repository": "jonathantneal/postcss-color-mod-function",
   "homepage": "https://github.com/jonathantneal/postcss-color-mod-function#readme",
   "bugs": "https://github.com/jonathantneal/postcss-color-mod-function/issues",
-  "main": "index.bundle.js",
-  "module": "index.js",
+  "main": "index.cjs.js",
+  "module": "index.es.js",
   "files": [
-    "index.js",
-    "index.bundle.js",
+    "index.cjs.js",
+    "index.es.js",
     "lib"
   ],
   "scripts": {
