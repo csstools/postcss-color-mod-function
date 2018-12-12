@@ -8,7 +8,7 @@
 [PostCSS color-mod() Function] lets you modify colors using the `color-mod()`
 function in CSS, following the [CSS Color Module Level 4] specification (05 July 2016).
 
-**!!! `color-mod()` has been removed from [the draft of Color Module Level 4 specification](https://drafts.csswg.org/css-color/).**
+**⚠️ `color-mod()` has been removed from [the draft of Color Module Level 4 specification](https://drafts.csswg.org/css-color/).**
 
 ```pcss
 :root {
