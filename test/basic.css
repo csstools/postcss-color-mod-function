@@ -91,6 +91,11 @@ test-tint-shade-adjuster {
 }
 
 test-blend-adjuster {
+	color: color-mod(yellow blend(red 0%));
+	color: color-mod(yellow blend(red 35%));
+	color: color-mod(yellow blend(red 75%));
+	color: color-mod(yellow blend(red 100%));
+
 	color: color-mod(yellow blend(red 50%));
 	color: color-mod(yellow blend(red 50% rgb));
 	color: color-mod(yellow blend(red 50% hsl));
@@ -103,6 +108,30 @@ test-contrast-adjuster {
 	color: color-mod(yellow contrast(50%));
 	color: color-mod(yellow contrast(75%));
 	color: color-mod(yellow contrast(100%));
+}
+
+contrast-on-white {
+	color: color-mod(rgb(255, 255, 255) contrast(0%));
+	color: color-mod(rgb(255, 255, 255) contrast(25%));
+	color: color-mod(rgb(255, 255, 255) contrast(50%));
+	color: color-mod(rgb(255, 255, 255) contrast(75%));
+	color: color-mod(rgb(255, 255, 255) contrast(100%));
+}
+
+contrast-on-grey {
+	color: color-mod(rgb(127, 127, 127) contrast(0%));
+	color: color-mod(rgb(127, 127, 127) contrast(25%));
+	color: color-mod(rgb(127, 127, 127) contrast(50%));
+	color: color-mod(rgb(127, 127, 127) contrast(75%));
+	color: color-mod(rgb(127, 127, 127) contrast(100%));
+}
+
+contrast-on-black {
+	color: color-mod(rgb(0, 0, 0) contrast(0%));
+	color: color-mod(rgb(0, 0, 0) contrast(25%));
+	color: color-mod(rgb(0, 0, 0) contrast(50%));
+	color: color-mod(rgb(0, 0, 0) contrast(75%));
+	color: color-mod(rgb(0, 0, 0) contrast(100%));
 }
 
 test-combination-adjuster {

@@ -82,15 +82,20 @@ test-blackness-whiteness-adjuster {
 
 test-tint-shade-adjuster {
 	color: rgb(255, 0, 0);
-	color: rgb(255, 0, 0);
-	color: rgb(255, 0, 0);
 	color: rgb(255, 255, 255);
 	color: rgb(0, 0, 0);
-	color: rgb(255, 51, 51);
-	color: rgb(204, 0, 0);
+	color: rgb(255, 0, 0);
+	color: rgb(255, 0, 0);
+	color: rgb(255, 204, 204);
+	color: rgb(51, 0, 0);
 }
 
 test-blend-adjuster {
+	color: rgb(255, 0, 0);
+	color: rgb(255, 89, 0);
+	color: rgb(255, 191, 0);
+	color: rgb(255, 255, 0);
+
 	color: rgb(255, 128, 0);
 	color: rgb(255, 128, 0);
 	color: hsl(30, 100%, 50%);
@@ -98,15 +103,39 @@ test-blend-adjuster {
 }
 
 test-contrast-adjuster {
-	color: rgb(0, 0, 0);
-	color: rgb(64, 64, 0);
-	color: rgb(128, 128, 0);
-	color: rgb(191, 191, 0);
 	color: rgb(255, 255, 0);
+	color: rgb(191, 191, 0);
+	color: rgb(128, 128, 0);
+	color: rgb(64, 64, 0);
+	color: rgb(0, 0, 0);
+}
+
+contrast-on-white {
+	color: rgb(255, 255, 255);
+	color: rgb(191, 191, 191);
+	color: rgb(128, 128, 128);
+	color: rgb(64, 64, 64);
+	color: rgb(0, 0, 0);
+}
+
+contrast-on-grey {
+	color: rgb(127, 127, 127);
+	color: rgb(95, 95, 95);
+	color: rgb(64, 64, 64);
+	color: rgb(32, 32, 32);
+	color: rgb(0, 0, 0);
+}
+
+contrast-on-black {
+	color: rgb(0, 0, 0);
+	color: rgb(64, 64, 64);
+	color: rgb(128, 128, 128);
+	color: rgb(191, 191, 191);
+	color: rgb(255, 255, 255);
 }
 
 test-combination-adjuster {
-	color: rgb(179, 77, 119);
+	color: rgb(179, 153, 204);
 }
 
 test-sameness {
@@ -139,7 +168,7 @@ test-linear-gradient {
 }
 
 test-var-blend {
-	color: rgb(230, 0, 26);
+	color: rgb(26, 0, 230);
 }
 
 test-transparent {
