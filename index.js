@@ -1,6 +1,6 @@
 import getCustomProperties from './lib/get-custom-properties';
 import importCustomPropertiesFromSources from './lib/import-from';
-import parser from 'postcss-values-parser';
+import parser from 'postcss-value-parser';
 import transformAST from './lib/transform';
 
 module.exports = (opts = {}) => {
@@ -26,13 +26,13 @@ module.exports = (opts = {}) => {
 				await customPropertiesPromise,
 				getCustomProperties(root, { preserve: true })
 			);
-	
+
 			root.walkDecls(decl => {
 				const originalValue = decl.value;
-	
+
 				if (colorModFunctionMatch.test(originalValue)) {
-					const ast = parser(originalValue, { loose: true }).parse();
-	
+					const ast = parser(originalValue);
+
 					transformAST(ast, {
 						unresolved: unresolvedOpt,
 						stringifier: stringifierOpt,
@@ -41,9 +41,9 @@ module.exports = (opts = {}) => {
 						result,
 						customProperties
 					});
-	
-					const modifiedValue = ast.toString();
-	
+
+					const modifiedValue = parser.stringify(ast);
+
 					if (originalValue !== modifiedValue) {
 						decl.value = modifiedValue;
 					}

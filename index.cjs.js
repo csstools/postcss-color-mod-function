@@ -1,6 +1,6 @@
 'use strict';
 
-var valueParser = require('postcss-values-parser');
+var parser = require('postcss-value-parser');
 var fs = require('fs');
 var path = require('path');
 var postcss = require('postcss');
@@ -27,7 +27,7 @@ function getCustomProperties(root, opts) {
 					const { prop } = decl;
 
 					// write the parsed value to the custom property
-					customPropertiesObject[prop] = valueParser(decl.value).parse();
+					customPropertiesObject[prop] = parser(decl.value);
 
 					// conditionally remove the custom property declaration
 					if (!opts.preserve) {
@@ -89,7 +89,7 @@ function importCustomPropertiesFromObject(object) {
 	);
 
 	for (const prop in customProperties) {
-		customProperties[prop] = valueParser(customProperties[prop]).parse();
+		customProperties[prop] = parser(customProperties[prop]);
 	}
 
 	return customProperties;
@@ -872,7 +872,7 @@ function manageUnresolved(node, opts, word, message) {
 /* ========================================================================== */
 
 function transformAST(node, opts) {
-	node.nodes.slice(0).forEach(child => {
+	node.nodes.slice(0).forEach((child, index) => {
 		if (isColorModFunction(child)) {
 			// transform any variables within the color-mod() function
 			if (opts.transformVars) {
@@ -884,10 +884,10 @@ function transformAST(node, opts) {
 
 			if (color) {
 				// update the color-mod() function with the transformed value
-				child.replaceWith(valueParser.word({
-					raws: child.raws,
+				node.nodes.splice(index, 1, {
+					type: 'word',
 					value: opts.stringifier(color)
-				}));
+				});
 			}
 		} else if (child.nodes && Object(child.nodes).length) {
 			transformAST(child, opts);
@@ -899,7 +899,7 @@ function transformAST(node, opts) {
 /* ========================================================================== */
 
 function transformVariables(node, opts) {
-	walk(node, child => {
+	parser.walk(node.nodes, (child, index, nodes) => {
 		if (isVariable(child)) {
 			// get the custom property and fallback value from var()
 			const [prop, fallbackNode] = transformArgsByParams(child, [
@@ -912,8 +912,8 @@ function transformVariables(node, opts) {
 				let customPropertyValue = opts.customProperties[prop];
 
 				// follow custom properties referencing custom properties
-				if (looseVarMatch.test(customPropertyValue)) {
-					const rootChildAST = customPropertyValue.clone();
+				if (looseVarMatch.test(parser.stringify(customPropertyValue))) {
+					const rootChildAST = JSON.parse(JSON.stringify({ nodes: customPropertyValue.nodes }));
 
 					transformVariables(rootChildAST, opts);
 
@@ -921,18 +921,16 @@ function transformVariables(node, opts) {
 				}
 
 				// replace var() with the custom property value
-				if (customPropertyValue.nodes.length === 1 && customPropertyValue.nodes[0].nodes.length) {
-					customPropertyValue.nodes[0].nodes.forEach(customPropertyChild => {
-						child.parent.insertBefore(child, customPropertyChild);
-					});
+				if (customPropertyValue.nodes.length) {
+					nodes.splice(index, 0, ...JSON.parse(JSON.stringify(customPropertyValue.nodes)));
 				}
 
-				child.remove();
+				nodes.splice(nodes.indexOf(child), 1);
 			} else if (fallbackNode && fallbackNode.nodes.length === 1 && fallbackNode.nodes[0].nodes.length) {
 				// otherwise, replace var() with the fallback value
 				transformVariables(fallbackNode, opts);
 
-				child.replaceWith(...fallbackNode.nodes[0].nodes[0]);
+				nodes.splice(index, 1, ...fallbackNode.nodes[0].nodes[0]);
 			}
 		}
 	});
@@ -1018,7 +1016,7 @@ function transformHWBFunction(node, opts) {
 // return a transformed color-mod color function
 function transformColorModFunction(node, opts) {
 	// [ <color> | <hue> ] <color-adjuster>*
-	const [colorOrHueNode, ...adjusterNodes] = (node.nodes || []).slice(1, -1) || [];
+	const [colorOrHueNode, ...adjusterNodes] = node.nodes || [];
 
 	if (colorOrHueNode !== undefined) {
 		const color = isHue(colorOrHueNode)
@@ -1076,7 +1074,9 @@ function transformNamedColor(node, opts) {
 
 // return a transformed color using adjustments
 function transformColorByAdjusters(color, adjusterNodes, opts) {
-	const adjustedColor = adjusterNodes.reduce((base, node) => {
+	const adjustedColor = adjusterNodes.filter((node) => {
+		return node.type !== 'space' && node.type !== 'comment';
+	}).reduce((base, node) => {
 		if (isAlphaBlueGreenRedAdjuster(node)) {
 			return transformAlphaBlueGreenRedAdjuster(base, node, opts);
 		} else if (isRGBAdjuster(node)) {
@@ -1329,7 +1329,7 @@ function transformColorSpace(node, opts) {
 function transformAlpha(node, opts) {
 	if (isNumber(node)) {
 		// <number>
-		return node.value * 100;
+		return Number(parser.unit(node.value).number) * 100;
 	} else if (isPercentage(node)) {
 		// <percentage>
 		return transformPercentage(node, opts);
@@ -1352,20 +1352,20 @@ function transformRGBNumber(node, opts) {
 function transformHue(node, opts) {
 	if (isHue(node)) {
 		// <hue> = <number> | <angle>
-		const unit = node.unit.toLowerCase();
+		const unit = parser.unit(node.value).unit.toLowerCase();
 
 		if (unit === 'grad') {
 			// if <angle> = <gradian> (400 per circle)
-			return convertGtoD(node.value);
+			return convertGtoD(Number(parser.unit(node.value).number));
 		} else if (unit === 'rad') {
 			// if <angle> = <radian> (2π per circle)
-			return convertRtoD(node.value);
+			return convertRtoD(Number(parser.unit(node.value).number));
 		} else if (unit === 'turn') {
 			// if <angle> = <turn> (1 per circle)
-			return convertTtoD(node.value);
+			return convertTtoD(Number(parser.unit(node.value).number));
 		} else {
 			// if <angle> = [ <degree> | <number> ] (360 per circle)
-			return convertDtoD(node.value);
+			return convertDtoD(Number(parser.unit(node.value).number));
 		}
 	} else {
 		return manageUnresolved(node, opts, node.value, `Expected a valid hue`);
@@ -1376,9 +1376,9 @@ function transformHue(node, opts) {
 function transformPercentage(node, opts) {
 	if (isPercentage(node)) {
 		// <percentage>
-		return Number(node.value);
+		return Number(parser.unit(node.value).number);
 	} else {
-		return manageUnresolved(node, opts, node.value, `Expected a valid hue`);
+		return manageUnresolved(node, opts, node.value, `Expected a valid percentage`);
 	}
 }
 
@@ -1432,28 +1432,22 @@ function transformNode(node) {
 
 // return the first set of transformed arguments allowable by the parameters
 function transformArgsByParams(node, params) {
-	const nodes = (node.nodes || []).slice(1, -1);
+	const nodes = (node.nodes || []).filter((node) => {
+		return node.type !== 'space' && node.type !== 'comment';
+	});
 	const opts = { unresolved: 'ignore' };
 
-	return params.map(param => nodes.map(
-		(childNode, index) => typeof param[index] === 'function' ? param[index](childNode, opts) : undefined
-	).filter(child => typeof child !== 'boolean')).filter(param => param.every(
-		result => result !== undefined
-	))[0] || [];
-}
-
-/* Walk helper (required because the default walker is affected by mutations)
-/* ========================================================================== */
-
-// run a function over each node and hen walk each child node of that node
-function walk(node, fn) {
-	fn(node);
-
-	if (Object(node.nodes).length) {
-		node.nodes.slice().forEach(childNode => {
-			walk(childNode, fn);
-		});
-	}
+	return params.map((param) => {
+		return nodes.map((childNode, index) => {
+			return typeof param[index] === 'function' ? param[index](childNode, opts) : undefined
+		}).filter((child) => {
+			return typeof child !== 'boolean'
+		})
+	}).filter((param) => {
+		return param.every((result) => {
+			return result !== undefined
+		})
+	})[0] || [];
 }
 
 /* Variable validators
@@ -1462,7 +1456,7 @@ function walk(node, fn) {
 // return whether the node is a var function
 function isVariable(node) {
 	// var()
-	return Object(node).type === 'func' && varMatch.test(node.value);
+	return Object(node).type === 'function' && varMatch.test(node.value);
 }
 
 /* Adjustment validators
@@ -1471,42 +1465,42 @@ function isVariable(node) {
 // return whether the node is an a/alpha/blue/green/red adjuster
 function isAlphaBlueGreenRedAdjuster(node) {
 	// [ a(), alpha(), blue(), green(), red() ]
-	return Object(node).type === 'func' && alphaBlueGreenRedMatch.test(node.value);
+	return Object(node).type === 'function' && alphaBlueGreenRedMatch.test(node.value);
 }
 
 // return whether the node is an rgb adjuster
 function isRGBAdjuster(node) {
-	return Object(node).type === 'func' && rgbMatch.test(node.value);
+	return Object(node).type === 'function' && rgbMatch.test(node.value);
 }
 
 // return whether the node is a hue adjuster
 function isHueAdjuster(node) {
 	// [ h() | hue() ]
-	return Object(node).type === 'func' && hueMatch.test(node.value);
+	return Object(node).type === 'function' && hueMatch.test(node.value);
 }
 
 // return whether the node is a blackness/lightness/saturation/whiteness adjuster
 function isBlacknessLightnessSaturationWhitenessAdjuster(node) {
 	// [ b() | blackness() | l() | lightness() | s() | saturation() | w() | whiteness() ]
-	return Object(node).type === 'func' && blacknessLightnessSaturationWhitenessMatch.test(node.value);
+	return Object(node).type === 'function' && blacknessLightnessSaturationWhitenessMatch.test(node.value);
 }
 
 // return whether the node is a shade/tint adjuster
 function isShadeTintAdjuster(node) {
 	// [ shade() | tint() ]
-	return Object(node).type === 'func' && shadeTintMatch.test(node.value);
+	return Object(node).type === 'function' && shadeTintMatch.test(node.value);
 }
 
 // return whether the node is a blend adjuster
 function isBlendAdjuster(node) {
 	// [ blend(), blenda() ]
-	return Object(node).type === 'func' && blendMatch.test(node.value);
+	return Object(node).type === 'function' && blendMatch.test(node.value);
 }
 
 // return whether the node is a contrast adjuster
 function isContrastAdjuster(node) {
 	// [ contrast() ]
-	return Object(node).type === 'func' && contrastMatch.test(node.value);
+	return Object(node).type === 'function' && contrastMatch.test(node.value);
 }
 
 /* Color validators
@@ -1515,25 +1509,25 @@ function isContrastAdjuster(node) {
 // return whether the node is an rgb/rgba color function
 function isRGBFunction(node) {
 	// [ rgb(), rgba() ]
-	return Object(node).type === 'func' && rgbaMatch.test(node.value);
+	return Object(node).type === 'function' && rgbaMatch.test(node.value);
 }
 
 // return whether the node is an hsl color function
 function isHSLFunction(node) {
 	// [ hsl(), hsla() ]
-	return Object(node).type === 'func' && hslaMatch.test(node.value);
+	return Object(node).type === 'function' && hslaMatch.test(node.value);
 }
 
 // return whether the node is an hwb color function
 function isHWBFunction(node) {
 	// hwb()
-	return Object(node).type === 'func' && hwbMatch.test(node.value);
+	return Object(node).type === 'function' && hwbMatch.test(node.value);
 }
 
 // return whether the node is a color-mod function
 function isColorModFunction(node) {
 	// color-mod()
-	return Object(node).type === 'func' && colorModMatch.test(node.value);
+	return Object(node).type === 'function' && colorModMatch.test(node.value);
 }
 
 // return whether the node is a valid named-color
@@ -1558,42 +1552,57 @@ function isColorSpace(node) {
 
 // return whether the hue value is valid
 function isHue(node) {
-	return Object(node).type === 'number' && hueUnitMatch.test(node.unit);
+	if (Object(node).type !== 'word') {
+		return false;
+	}
+
+	const parsedNumber = parser.unit(node.value);
+	return parsedNumber && hueUnitMatch.test(parsedNumber.unit);
 }
 
 // return whether the comma is valid
 function isComma(node) {
-	return Object(node).type === 'comma';
+	return Object(node).type === 'div' && node.value === ',';
 }
 
 // return whether the slash operator is valid
 function isSlash(node) {
-	return Object(node).type === 'operator' && node.value === '/';
+	return Object(node).type === 'div' && node.value === '/';
 }
 
 // return whether the number is valid
 function isNumber(node) {
-	return Object(node).type === 'number' && node.unit === '';
+	if (Object(node).type !== 'word') {
+		return false;
+	}
+
+	const parsedNumber = parser.unit(node.value);
+	return parsedNumber && parsedNumber.unit === '';
 }
 
 // return whether the mind-plus operator is valid
 function isMinusPlusOperator(node) {
-	return Object(node).type === 'operator' && minusPlusMatch.test(node.value);
+	return Object(node).type === 'word' && minusPlusMatch.test(node.value);
 }
 
 // return whether the minus-plus-times operator is valid
 function isMinusPlusTimesOperator(node) {
-	return Object(node).type === 'operator' && minusPlusTimesMatch.test(node.value);
+	return Object(node).type === 'word' && minusPlusTimesMatch.test(node.value);
 }
 
 // return whether the times operator is valid
 function isTimesOperator(node) {
-	return Object(node).type === 'operator' && timesMatch.test(node.value);
+	return Object(node).type === 'word' && timesMatch.test(node.value);
 }
 
 // return whether the percentage is valid
 function isPercentage(node) {
-	return Object(node).type === 'number' && (node.unit === '%' || node.value === '0');
+	if (Object(node).type !== 'word') {
+		return false;
+	}
+
+	const parsedNumber = parser.unit(node.value);
+	return parsedNumber && (parsedNumber.unit === '%' || parseFloat(parsedNumber.number) === 0);
 }
 
 // return whether the node is a word
@@ -1649,13 +1658,13 @@ module.exports = (opts = {}) => {
 				await customPropertiesPromise,
 				getCustomProperties(root, { preserve: true })
 			);
-	
+
 			root.walkDecls(decl => {
 				const originalValue = decl.value;
-	
+
 				if (colorModFunctionMatch.test(originalValue)) {
-					const ast = valueParser(originalValue, { loose: true }).parse();
-	
+					const ast = parser(originalValue);
+
 					transformAST(ast, {
 						unresolved: unresolvedOpt,
 						stringifier: stringifierOpt,
@@ -1664,9 +1673,9 @@ module.exports = (opts = {}) => {
 						result,
 						customProperties
 					});
-	
-					const modifiedValue = ast.toString();
-	
+
+					const modifiedValue = parser.stringify(ast);
+
 					if (originalValue !== modifiedValue) {
 						decl.value = modifiedValue;
 					}

@@ -1,5 +1,9 @@
 # Changes to PostCSS color-mod() Function
 
+### 4.1.0 (October 18, 2024)
+
+- Drop `postcss-values-parser` in favor of `postcss-value-parser`
+
 ### 4.0.0 (October 18, 2024)
 
 - PostCSS 8 support
