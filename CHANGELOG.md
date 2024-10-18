@@ -1,5 +1,9 @@
 # Changes to PostCSS color-mod() Function
 
+### 4.0.0 (October 18, 2024)
+
+- PostCSS 8 support
+
 ### 3.0.3 (September 23, 2018)
 
 - Fixed an issue with certain colors not being tranformed from variables
