@@ -203,4 +203,4 @@ be used.
 [Gulp PostCSS]: https://github.com/postcss/gulp-postcss
 [Grunt PostCSS]: https://github.com/nDmitry/grunt-postcss
 [PostCSS]: https://github.com/postcss/postcss
-[PostCSS color-mod() Function]: https://github.com/jonathantneal/postcss-color-mod-function
+[PostCSS color-mod() Function]: https://github.com/csstools/postcss-color-mod-function

@@ -1,12 +1,12 @@
 {
   "name": "postcss-color-mod-function",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Modify colors using the color-mod() function in CSS",
   "author": "Jonathan Neal <jonathantneal@hotmail.com>",
   "license": "CC0-1.0",
   "repository": "jonathantneal/postcss-color-mod-function",
-  "homepage": "https://github.com/jonathantneal/postcss-color-mod-function#readme",
-  "bugs": "https://github.com/jonathantneal/postcss-color-mod-function/issues",
+  "homepage": "https://github.com/csstools/postcss-color-mod-function#readme",
+  "bugs": "https://github.com/csstools/postcss-color-mod-function/issues",
   "main": "index.cjs.js",
   "module": "index.es.mjs",
   "files": [
