@@ -1,9 +1,7 @@
 # PostCSS color-mod() Function [<img src="https://postcss.github.io/postcss/logo.svg" alt="PostCSS Logo" width="90" height="90" align="right">][postcss]
 
 [![NPM Version][npm-img]][npm-url]
-[![CSS Standard Status][css-img]][css-url]
-[![Build Status][cli-img]][cli-url]
-[![Support Chat][git-img]][git-url]
+[![Test](https://github.com/csstools/postcss-color-mod-function/actions/workflows/test.yml/badge.svg)](https://github.com/csstools/postcss-color-mod-function/actions/workflows/test.yml)
 
 [PostCSS color-mod() Function] lets you modify colors using the `color-mod()`
 function in CSS, following the outdated version of [CSS Color Module Level 4] specification (05 July 2016).
@@ -190,12 +188,6 @@ Variables may reference other variables, and this plugin will attempt to
 resolve them. If `transformVars` is set to `false` then `importFrom` will not
 be used.
 
-[cli-img]: https://img.shields.io/travis/jonathantneal/postcss-color-mod-function.svg
-[cli-url]: https://travis-ci.org/jonathantneal/postcss-color-mod-function
-[css-img]: https://cssdb.org/badge/color-mod-function.svg
-[css-url]: https://preset-env.cssdb.org/features#color-mod-function
-[git-img]: https://img.shields.io/badge/support-chat-blue.svg
-[git-url]: https://gitter.im/postcss/postcss
 [npm-img]: https://img.shields.io/npm/v/postcss-color-mod-function.svg
 [npm-url]: https://www.npmjs.com/package/postcss-color-mod-function
 
