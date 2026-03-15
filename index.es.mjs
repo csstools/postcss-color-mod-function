@@ -2,7 +2,7 @@ import parser from 'postcss-value-parser';
 import fs from 'fs';
 import path from 'path';
 import postcss from 'postcss';
-import { rgb2hue, hsl2rgb, hwb2rgb, rgb2hsl, hwb2hsl, rgb2hwb, hsl2hwb } from '@csstools/convert-colors';
+import { rgb2hue, rgb2hwb, hsl2hwb, hsl2rgb, hwb2rgb, rgb2hsl, hwb2hsl } from '@csstools/convert-colors';
 
 // return custom selectors from the css root, conditionally removing them
 function getCustomProperties(root, opts) {
