@@ -48,7 +48,7 @@ function getCustomProperties(root, opts) {
 // match html and :root rules
 const htmlSelectorRegExp = /^html$/i;
 const rootSelectorRegExp = /^:root$/i;
-const customPropertyRegExp = /^--[A-z][\w-]*$/;
+const customPropertyRegExp = /^--[a-zA-Z][\w-]*$/;
 
 // whether the node is an html or :root rule
 const isHtmlRule = node => node.type === 'rule' && htmlSelectorRegExp.test(node.selector) && Object(node.nodes).length;
